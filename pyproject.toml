@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "lensq"
+version = "0.1.0"
+description = "Image Processing API built w/ Flask, Keras and Celery."
+authors = ["Sarang S <email.sarangs@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+keras = "^3.3.3"
+tensorflow = "^2.16.1"
+flask = "^3.0.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
