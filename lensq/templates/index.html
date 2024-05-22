@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset=UTF-8>
+  <title>lensq</title>
+</head>
+
+<body>
+  <h2>lensq</h2>
+  <hr>
+  <p>Upload an image.
+  <form id=predict method=post enctype="multipart/form-data" action="{{ url_for('tasks.predict') }}">
+    <label>Image <input type="file" name="images" accept="image/*" multiple required
+        onchange="previewImages(event)"></label><br>
+    <input type=submit>
+    <p id=predict-result></p>
+  </form>
+  <div id="image-preview-container"></div>
+
+  <script>
+    const previewImages = (event) => {
+      const previewContainer = document.getElementById('image-preview-container');
+      previewContainer.innerHTML = '';
+
+      const files = event.target.files;
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+
+        reader.onload = function () {
+          const row = document.createElement('div');
+          const img = document.createElement('img');
+          row.appendChild(img);
+          img.src = reader.result;
+          img.className = 'image-preview';
+          row.appendChild(document.createElement('p'));
+          previewContainer.appendChild(row);
+        }
+
+        reader.readAsDataURL(file);
+      }
+    }
+
+    const taskForm = (formName, doPoll, report) => {
+      document.forms[formName].addEventListener("submit", (event) => {
+        event.preventDefault()
+        fetch(event.target.action, {
+          method: "POST",
+          body: new FormData(event.target)
+        })
+          .then(response => response.json())
+          .then(data => {
+            report(null)
+
+            const poll = () => {
+              fetch(`/tasks/result/${data["result_id"]}`)
+                .then(response => response.json())
+                .then(data => {
+                  report(data)
+
+                  if (!data["ready"]) {
+                    setTimeout(poll, 500)
+                  } else if (!data["successful"]) {
+                    console.error(formName, data)
+                  }
+                })
+            }
+
+            if (doPoll) {
+              poll()
+            }
+          })
+      })
+    }
+
+    taskForm("predict", true, data => {
+      const el = document.getElementById("predict-result")
+      const previewContainer = document.getElementById('image-preview-container');
+
+      if (data === null) {
+        el.innerText = "submitted"
+      } else if (!data["ready"]) {
+        el.innerText = "waiting"
+      } else if (!data["successful"]) {
+        el.innerText = "error, check console"
+      } else {
+        [...document.getElementById('image-preview-container').children].forEach((row, i) => {
+          row.children[1].innerText = data["value"][i]
+        });
+        el.innerText = "done"
+      }
+    })
+
+  </script>
+</body>
+
+</html>

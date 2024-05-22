@@ -1,2 +1,9 @@
 # lensq
-Image Processing API built w/ Flask, Keras and Celery.
+
+## Run locally
+
+```sh
+celery -A make_celery worker --loglevel INFO  
+
+flask -A lensq run --debug
+```
